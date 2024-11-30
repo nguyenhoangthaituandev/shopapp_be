@@ -28,10 +28,10 @@ public class UserRegisterForm {
 
     private Date dateOfBirth;
 
-    private Integer facebookAccountID;
+    private Integer facebookAccountId;
 
-    private Integer googleAccountID;
+    private Integer googleAccountId;
 
     @NotNull(message="Role'id  is required")
-    private Long roleID;
+    private Long roleId;
 }

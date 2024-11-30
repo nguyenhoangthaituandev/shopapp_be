@@ -24,7 +24,7 @@ public class ProductForm {
 
     private String description;
 
-    private String categoryID;
+    private String categoryId;
 
     private List<MultipartFile> files;
 }

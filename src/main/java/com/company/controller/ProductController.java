@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/v1/products")
+@RequestMapping("${api.prefix}/products")
 public class ProductController {
 
     @GetMapping
@@ -34,8 +34,8 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getProductByID(@PathVariable(name = "id") Long productID) {
-        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get Product with ID: %d", productID));
+    public ResponseEntity<String> getProductById(@PathVariable(name = "id") Long productId) {
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get Product with ID: %d", productId));
     }
 
     @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -71,7 +71,7 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body("Create product successfully:  " + productForm);
     }
 
-    private String storeFile(MultipartFile file) throws IOException {
+    public String storeFile(MultipartFile file) throws IOException {
         // get name và loại bỏ những ký tự thừa
         String fileName = StringUtils.cleanPath((file.getOriginalFilename()));
         // generate ra tên unique
@@ -93,7 +93,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProductByID(@PathVariable(name = "id") Long productID) {
-        return ResponseEntity.status(HttpStatus.OK).body("Delete Product: " + productID);
+    public ResponseEntity<String> deleteProductById(@PathVariable(name = "id") Long productId) {
+        return ResponseEntity.status(HttpStatus.OK).body("Delete Product: " + productId);
     }
 }
