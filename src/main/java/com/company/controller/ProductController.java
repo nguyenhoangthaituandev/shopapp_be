@@ -17,12 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/products")
 public class ProductController {
+
     @GetMapping
     public ResponseEntity<String> GetAllProducts(
             @RequestParam("page") int page,
@@ -40,7 +42,6 @@ public class ProductController {
     public ResponseEntity<?> createProduct(
             @ModelAttribute @Valid ProductForm productForm,
             BindingResult result) throws IOException {
-        MultipartFile file=productForm.getFile();
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
                     .stream()
@@ -48,7 +49,13 @@ public class ProductController {
                     .toList();
             return ResponseEntity.badRequest().body(errorMessages);
         }
-        if (file != null) {
+
+        List<MultipartFile> files = productForm.getFiles();
+        files = files == null ? new ArrayList<MultipartFile>() : files;
+        for (MultipartFile file : files) {
+            if(file.getSize()==0){
+                continue;
+            }
             if (file.getSize() > 10 * 1024 * 1024) {
                 return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File is too large! Maximum size is 10MB");
             }
@@ -59,12 +66,12 @@ public class ProductController {
 
             // save file to thumbnail
             String fileNames = storeFile(file);
-            // lưu vào db
+            // TODO lưu vào db
         }
         return ResponseEntity.status(HttpStatus.OK).body("Create product successfully:  " + productForm);
     }
 
-    private String storeFile (MultipartFile file) throws IOException {
+    private String storeFile(MultipartFile file) throws IOException {
         // get name và loại bỏ những ký tự thừa
         String fileName = StringUtils.cleanPath((file.getOriginalFilename()));
         // generate ra tên unique
@@ -86,8 +93,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProductByID (@PathVariable(name = "id") Long productID){
+    public ResponseEntity<String> deleteProductByID(@PathVariable(name = "id") Long productID) {
         return ResponseEntity.status(HttpStatus.OK).body("Delete Product: " + productID);
     }
-
 }
