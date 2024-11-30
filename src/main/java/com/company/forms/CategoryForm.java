@@ -10,6 +10,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class CategoryForm {
-    @NotEmpty(message="Category can not be empty")
+    @NotEmpty(message = "Category can not be empty")
     private String name;
 }

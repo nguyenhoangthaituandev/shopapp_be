@@ -53,7 +53,7 @@ public class ProductController {
         List<MultipartFile> files = productForm.getFiles();
         files = files == null ? new ArrayList<MultipartFile>() : files;
         for (MultipartFile file : files) {
-            if(file.getSize()==0){
+            if (file.getSize() == 0) {
                 continue;
             }
             if (file.getSize() > 10 * 1024 * 1024) {

@@ -13,11 +13,11 @@ import java.util.List;
 @Setter
 @ToString
 public class ProductForm {
-    @NotBlank(message="Name is required")
-    @Size(min=3,max=200,message="Name must between 3 and 200 characters")
+    @NotBlank(message = "Name is required")
+    @Size(min = 3, max = 200, message = "Name must between 3 and 200 characters")
     private String name;
 
-    @Min(value=0,message="Price must be greater than or equal 0")
+    @Min(value = 0, message = "Price must be greater than or equal 0")
     private Float price;
 
     private String thumbnail;
