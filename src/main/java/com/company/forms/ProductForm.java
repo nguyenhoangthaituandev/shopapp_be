@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -22,4 +23,6 @@ public class ProductForm {
     private String description;
 
     private String categoryID;
+
+    private MultipartFile file;
 }
