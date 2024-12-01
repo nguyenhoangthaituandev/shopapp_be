@@ -44,5 +44,5 @@ public class User extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name="role_id")
-    private Role roleId;
+    private Role role;
 }
