@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("${api.prefix}/categories")
 public class CategoryController {
-    public final CategoryService categoryService;
+    private final CategoryService categoryService;
 
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
