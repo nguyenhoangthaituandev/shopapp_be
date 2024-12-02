@@ -1,6 +1,12 @@
 package com.company.controller;
 
+import com.company.exceptions.DataNotFoundException;
+import com.company.exceptions.InvalidParamException;
 import com.company.forms.ProductForm;
+import com.company.forms.ProductImageForm;
+import com.company.models.Product;
+import com.company.models.ProductImage;
+import com.company.services.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,23 +31,16 @@ import java.util.UUID;
 @RequestMapping("${api.prefix}/products")
 public class ProductController {
 
-    @GetMapping
-    public ResponseEntity<String> GetAllProducts(
-            @RequestParam("page") int page,
-            @RequestParam("limit") int limit
-    ) {
-        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get All products here with page = %d limit = %d", page, limit));
-    }
+    private final ProductService productService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<String> getProductById(@PathVariable(name = "id") Long productId) {
-        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get Product with ID: %d", productId));
+    public ProductController(ProductService productService) {
+        this.productService = productService;
     }
 
     @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createProduct(
             @ModelAttribute @Valid ProductForm productForm,
-            BindingResult result) throws IOException {
+            BindingResult result) throws IOException, DataNotFoundException, InvalidParamException {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
                     .stream()
@@ -49,6 +48,8 @@ public class ProductController {
                     .toList();
             return ResponseEntity.badRequest().body(errorMessages);
         }
+
+        Product product = productService.createProduct(productForm);
 
         List<MultipartFile> files = productForm.getFiles();
         files = files == null ? new ArrayList<MultipartFile>() : files;
@@ -64,12 +65,30 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("File must be image type");
             }
 
-            // save file to thumbnail
             String fileNames = storeFile(file);
-            // TODO lưu vào db
+            ProductImage productImage=productService.createProductImage(
+                    ProductImageForm.builder()
+                            .productId(product.getId())
+                            .imageUrl(fileNames)
+                            .build());
         }
+
         return ResponseEntity.status(HttpStatus.OK).body("Create product successfully:  " + productForm);
     }
+
+    @GetMapping
+    public ResponseEntity<String> GetAllProducts(
+            @RequestParam("page") int page,
+            @RequestParam("limit") int limit
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get All products here with page = %d limit = %d", page, limit));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<String> getProductById(@PathVariable(name = "id") Long productId) {
+        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get Product with ID: %d", productId));
+    }
+
 
     public String storeFile(MultipartFile file) throws IOException {
         // get name và loại bỏ những ký tự thừa

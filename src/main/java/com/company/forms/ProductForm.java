@@ -1,6 +1,5 @@
 package com.company.forms;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +23,7 @@ public class ProductForm {
 
     private String description;
 
-    private String categoryId;
+    private Long categoryId;
 
     private List<MultipartFile> files;
 }
