@@ -1,5 +1,6 @@
 package com.company.controller;
 
+import com.company.constant.Constant;
 import com.company.exceptions.DataNotFoundException;
 import com.company.exceptions.InvalidParamException;
 import com.company.forms.ProductForm;
@@ -37,9 +38,9 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping()
     public ResponseEntity<?> createProduct(
-            @ModelAttribute @Valid ProductForm productForm,
+            @RequestBody @Valid ProductForm productForm,
             BindingResult result) throws IOException, DataNotFoundException, InvalidParamException {
         if (result.hasErrors()) {
             List<String> errorMessages = result.getFieldErrors()
@@ -50,12 +51,23 @@ public class ProductController {
         }
 
         Product product = productService.createProduct(productForm);
+        return ResponseEntity.status(HttpStatus.OK).body(product);
+    }
 
-        List<MultipartFile> files = productForm.getFiles();
+    @PostMapping(value = "uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImages(@PathVariable(name = "id") Long productId,
+                                          @RequestParam("files") List<MultipartFile> files
+    ) throws Exception {
+        Product product = productService.getProductById(productId);
+
         files = files == null ? new ArrayList<MultipartFile>() : files;
+        if (files.size() >= Constant.MAXIMUM_IMAGES) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You can upload maximum +" + Constant.MAXIMUM_IMAGES + " images");
+        }
+        List<ProductImage> productImages = new ArrayList<>();
         for (MultipartFile file : files) {
             if (file.getSize() == 0) {
-                continue;
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product Image is null");
             }
             if (file.getSize() > 10 * 1024 * 1024) {
                 return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("File is too large! Maximum size is 10MB");
@@ -65,15 +77,22 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("File must be image type");
             }
 
-            String fileNames = storeFile(file);
-            ProductImage productImage=productService.createProductImage(
-                    ProductImageForm.builder()
-                            .productId(product.getId())
-                            .imageUrl(fileNames)
-                            .build());
-        }
+            String fileNames = getFileName(file);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Create product successfully:  " + productForm);
+            try {
+                ProductImage productImage = productService.createProductImage(fileNames, file,
+                        ProductImageForm.builder()
+                                .productId(product.getId())
+                                .imageUrl(fileNames)
+                                .build());
+                productImages.add(productImage);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e);
+            }
+
+
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(productImages);
     }
 
     @GetMapping
@@ -90,25 +109,21 @@ public class ProductController {
     }
 
 
-    public String storeFile(MultipartFile file) throws IOException {
+    public String getFileName(MultipartFile file) throws IOException {
+        if (!isImageFile(file) || file.getOriginalFilename() == null) {
+            throw new IOException("Invalid image file format");
+        }
         // get name và loại bỏ những ký tự thừa
         String fileName = StringUtils.cleanPath((file.getOriginalFilename()));
         // generate ra tên unique
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
-        // tạo ra một đối tượng đại diện folder uploads -> nơi chứa image
-        Path uploadDir = Paths.get("uploads");
-        // nếu chưa có folder đó thì tạo
-        if (!Files.exists(uploadDir)) {
-            Files.createDirectories(uploadDir);
-        }
+        return UUID.randomUUID().toString() + "_" + fileName;
 
-        // tạo đường dẫn đầy đủ từ folder tới file image mình mới generate ra
-        Path destination = Paths.get(uploadDir.toString(), uniqueFileName);
-        // file.getInputStream(): Lấy dữ liệu đầu vào từ tệp được tải lên.
-        // Files.copy(): Sao chép nội dung của tệp từ luồng đầu vào (InputStream) đến đường dẫn đích (destination).
-        // StandardCopyOption.REPLACE_EXISTING: Nếu một tệp với cùng tên đã tồn tại, tệp mới sẽ ghi đè lên tệp cũ.
-        Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
-        return uniqueFileName;
+
+    }
+
+    private boolean isImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.startsWith("image/");
     }
 
     @DeleteMapping("/{id}")

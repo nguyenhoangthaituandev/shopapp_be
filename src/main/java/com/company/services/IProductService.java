@@ -8,6 +8,9 @@ import com.company.models.Product;
 import com.company.models.ProductImage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface IProductService {
     public Product createProduct(ProductForm productForm) throws DataNotFoundException;
@@ -21,5 +24,5 @@ public interface IProductService {
     void deleteProduct(Long id);
 
     boolean existsByName(String name);
-    public ProductImage createProductImage( ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException;
+    public ProductImage createProductImage(String fileNames, MultipartFile file, ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException, IOException;
 }

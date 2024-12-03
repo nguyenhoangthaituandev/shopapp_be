@@ -1,5 +1,6 @@
 package com.company.services;
 
+import com.company.constant.Constant;
 import com.company.exceptions.DataNotFoundException;
 import com.company.exceptions.InvalidParamException;
 import com.company.forms.ProductForm;
@@ -13,7 +14,13 @@ import com.company.repositories.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 @Service
@@ -86,7 +93,7 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public ProductImage createProductImage( ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException {
+    public ProductImage createProductImage(String fileNames, MultipartFile file, ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException, IOException {
         Product product=productRepository.findById(productImageForm.getProductId())
                 .orElseThrow(()-> new DataNotFoundException("Can not found product with id: "+productImageForm.getProductId()));
         ProductImage productImage=ProductImage.builder()
@@ -95,9 +102,27 @@ public class ProductService implements IProductService{
                 .build();
         // Prevent insert more 5 images for product
        int size= productImageRepository.findByProductId(productImageForm.getProductId()).size();
-       if(size>=5){
-           throw new InvalidParamException("Number of image must be less than 5");
+       if(size>= Constant.MAXIMUM_IMAGES){
+           throw new InvalidParamException("Number of image must be less than "+Constant.MAXIMUM_IMAGES);
        }
+       storeFile(fileNames,file);
        return productImageRepository.save(productImage);
     }
+
+    private void storeFile(String fileNames,MultipartFile file) throws IOException {
+        // tạo ra một đối tượng đại diện folder uploads -> nơi chứa image
+        Path uploadDir = Paths.get("uploads");
+        // nếu chưa có folder đó thì tạo
+        if (!Files.exists(uploadDir)) {
+            Files.createDirectories(uploadDir);
+        }
+
+        // tạo đường dẫn đầy đủ từ folder tới file image mình mới generate ra
+        Path destination = Paths.get(uploadDir.toString(), fileNames);
+        // file.getInputStream(): Lấy dữ liệu đầu vào từ tệp được tải lên.
+        // Files.copy(): Sao chép nội dung của tệp từ luồng đầu vào (InputStream) đến đường dẫn đích (destination).
+        // StandardCopyOption.REPLACE_EXISTING: Nếu một tệp với cùng tên đã tồn tại, tệp mới sẽ ghi đè lên tệp cũ.
+        Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
+    }
+
 }
