@@ -1,6 +1,7 @@
 package com.company.services;
 
 import com.company.constant.Constant;
+import com.company.dtos.ProductDTO;
 import com.company.exceptions.DataNotFoundException;
 import com.company.exceptions.InvalidParamException;
 import com.company.forms.ProductForm;
@@ -24,24 +25,24 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 @Service
-public class ProductService implements IProductService{
+public class ProductService implements IProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
 
-    public ProductService(ProductRepository productRepository,CategoryRepository categoryRepository,ProductImageRepository productImageRepository){
-        this.productRepository=productRepository;
-        this.categoryRepository=categoryRepository;
-        this.productImageRepository=productImageRepository;
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository, ProductImageRepository productImageRepository) {
+        this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository;
+        this.productImageRepository = productImageRepository;
     }
 
     @Override
     public Product createProduct(ProductForm productForm) throws DataNotFoundException {
-        Category category=categoryRepository.findById(productForm.getCategoryId())
-                .orElseThrow(()->new DataNotFoundException(
-                        "Can not found category with id: "+productForm.getCategoryId()));
-        Product product=Product.builder()
+        Category category = categoryRepository.findById(productForm.getCategoryId())
+                .orElseThrow(() -> new DataNotFoundException(
+                        "Can not found category with id: " + productForm.getCategoryId()));
+        Product product = Product.builder()
                 .name(productForm.getName())
                 .price(productForm.getPrice())
                 .thumbnail(productForm.getThumbnail())
@@ -51,26 +52,38 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest);
+    public Page<ProductDTO> getAllProducts(PageRequest pageRequest) {
+        return productRepository.findAll(pageRequest).map(product ->
+        {
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(product.getName())
+                    .price(product.getPrice())
+                    .thumbnail(product.getThumbnail())
+                    .description(product.getDescription())
+                    .categoryId(product.getCategory().getId())
+                    .build();
+            productDTO.setCreatedAt(product.getCreatedAt());
+            productDTO.setUpdatedAt(product.getUpdatedAt());
+            return productDTO;
+        });
+
     }
 
 
     @Override
     public Product getProductById(Long id) throws DataNotFoundException {
         return productRepository.findById(id)
-                .orElseThrow(()->new DataNotFoundException("Cannot find product with id: "+id));
+                .orElseThrow(() -> new DataNotFoundException("Cannot find product with id: " + id));
     }
-
 
 
     @Override
     public Product updateProduct(Long id, ProductForm productForm) throws DataNotFoundException {
-        Product product=getProductById(id);
-        if(product!=null){
-            Category category=categoryRepository.findById(productForm.getCategoryId())
-                    .orElseThrow(()->new DataNotFoundException(
-                            "Can not found category with id: "+productForm.getCategoryId()));
+        Product product = getProductById(id);
+        if (product != null) {
+            Category category = categoryRepository.findById(productForm.getCategoryId())
+                    .orElseThrow(() -> new DataNotFoundException(
+                            "Can not found category with id: " + productForm.getCategoryId()));
             product.setName(productForm.getName());
             product.setCategory(category);
             product.setPrice(productForm.getPrice());
@@ -83,7 +96,7 @@ public class ProductService implements IProductService{
 
     @Override
     public void deleteProduct(Long id) {
-        Optional<Product> optionalProduct=productRepository.findById(id);
+        Optional<Product> optionalProduct = productRepository.findById(id);
         optionalProduct.ifPresent(productRepository::delete);
     }
 
@@ -94,22 +107,22 @@ public class ProductService implements IProductService{
 
     @Override
     public ProductImage createProductImage(String fileNames, MultipartFile file, ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException, IOException {
-        Product product=productRepository.findById(productImageForm.getProductId())
-                .orElseThrow(()-> new DataNotFoundException("Can not found product with id: "+productImageForm.getProductId()));
-        ProductImage productImage=ProductImage.builder()
+        Product product = productRepository.findById(productImageForm.getProductId())
+                .orElseThrow(() -> new DataNotFoundException("Can not found product with id: " + productImageForm.getProductId()));
+        ProductImage productImage = ProductImage.builder()
                 .product(product)
                 .imageUrl(productImageForm.getImageUrl())
                 .build();
         // Prevent insert more 5 images for product
-       int size= productImageRepository.findByProductId(productImageForm.getProductId()).size();
-       if(size>= Constant.MAXIMUM_IMAGES){
-           throw new InvalidParamException("Number of image must be less than "+Constant.MAXIMUM_IMAGES);
-       }
-       storeFile(fileNames,file);
-       return productImageRepository.save(productImage);
+        int size = productImageRepository.findByProductId(productImageForm.getProductId()).size();
+        if (size >= Constant.MAXIMUM_IMAGES) {
+            throw new InvalidParamException("Number of image must be less than " + Constant.MAXIMUM_IMAGES);
+        }
+        storeFile(fileNames, file);
+        return productImageRepository.save(productImage);
     }
 
-    private void storeFile(String fileNames,MultipartFile file) throws IOException {
+    private void storeFile(String fileNames, MultipartFile file) throws IOException {
         // tạo ra một đối tượng đại diện folder uploads -> nơi chứa image
         Path uploadDir = Paths.get("uploads");
         // nếu chưa có folder đó thì tạo

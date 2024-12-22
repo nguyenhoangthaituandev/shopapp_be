@@ -1,5 +1,6 @@
 package com.company.services;
 
+import com.company.dtos.ProductDTO;
 import com.company.exceptions.DataNotFoundException;
 import com.company.exceptions.InvalidParamException;
 import com.company.forms.ProductForm;
@@ -13,16 +14,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface IProductService {
-    public Product createProduct(ProductForm productForm) throws DataNotFoundException;
+    Product createProduct(ProductForm productForm) throws DataNotFoundException;
 
     Product getProductById(Long id) throws DataNotFoundException;
 
-    Page<Product> getAllProducts(PageRequest pageRequest);
+    Page<ProductDTO> getAllProducts(PageRequest pageRequest);
 
     Product updateProduct(Long id, ProductForm productForm) throws DataNotFoundException;
 
     void deleteProduct(Long id);
 
     boolean existsByName(String name);
-    public ProductImage createProductImage(String fileNames, MultipartFile file, ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException, IOException;
+
+    ProductImage createProductImage(String fileNames, MultipartFile file, ProductImageForm productImageForm) throws DataNotFoundException, InvalidParamException, IOException;
 }

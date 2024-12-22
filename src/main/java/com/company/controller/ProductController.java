@@ -1,6 +1,8 @@
 package com.company.controller;
 
 import com.company.constant.Constant;
+import com.company.dtos.ProductDTO;
+import com.company.dtos.ProductListDTO;
 import com.company.exceptions.DataNotFoundException;
 import com.company.exceptions.InvalidParamException;
 import com.company.forms.ProductForm;
@@ -9,6 +11,9 @@ import com.company.models.Product;
 import com.company.models.ProductImage;
 import com.company.services.ProductService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -96,11 +101,19 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<String> GetAllProducts(
+    public ResponseEntity<ProductListDTO> GetAllProducts(
             @RequestParam("page") int page,
             @RequestParam("limit") int limit
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(String.format("Get All products here with page = %d limit = %d", page, limit));
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("createdAt").descending());
+        Page<ProductDTO> productPage = productService.getAllProducts(pageRequest);
+
+        int totalPages = productPage.getTotalPages();
+        List<ProductDTO> products = productPage.getContent();
+        return ResponseEntity.ok(ProductListDTO.builder()
+                .product(products)
+                .totalPages(totalPages)
+                .build());
     }
 
     @GetMapping("/{id}")
