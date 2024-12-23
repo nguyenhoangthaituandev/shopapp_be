@@ -10,6 +10,7 @@ import com.company.forms.ProductImageForm;
 import com.company.models.Product;
 import com.company.models.ProductImage;
 import com.company.services.ProductService;
+import com.github.javafaker.Faker;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -142,5 +143,31 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProductById(@PathVariable(name = "id") Long productId) {
         return ResponseEntity.status(HttpStatus.OK).body("Delete Product: " + productId);
+    }
+
+    @PostMapping("/generateFakeProducts")
+    public ResponseEntity<String> generateFakeProducts(){
+        Faker faker=new Faker();
+        for(int i=0;i<1000;i++){
+            String productName=faker.commerce().productName();
+            if(productService.existsByName(productName)){
+                continue;
+            }
+
+            ProductForm productForm=ProductForm.builder()
+                    .name(productName)
+                    .price((float)faker.number().numberBetween(0,90_000_000))
+                    .thumbnail("")
+                    .description(faker.lorem().sentence())
+                    .categoryId((long)faker.number().numberBetween(1,4))
+                    .build();
+
+            try {
+                productService.createProduct(productForm);
+            } catch (DataNotFoundException e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok("Fake products created successfully");
     }
 }

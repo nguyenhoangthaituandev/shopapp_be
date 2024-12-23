@@ -45,6 +45,7 @@ public class ProductService implements IProductService {
         Product product = Product.builder()
                 .name(productForm.getName())
                 .price(productForm.getPrice())
+                .description(productForm.getDescription())
                 .thumbnail(productForm.getThumbnail())
                 .category(category)
                 .build();

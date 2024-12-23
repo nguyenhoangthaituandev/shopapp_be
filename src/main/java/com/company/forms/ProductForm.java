@@ -1,6 +1,7 @@
 package com.company.forms;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -11,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@Builder
 public class ProductForm {
     @NotBlank(message = "Name is required")
     @Size(min = 3, max = 200, message = "Name must between 3 and 200 characters")
