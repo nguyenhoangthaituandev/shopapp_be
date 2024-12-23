@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class ProductListDTO {
-    private List<ProductDTO> product;
+    private List<ProductDTO> products;
     private int totalPages;
 }

@@ -22,7 +22,7 @@ public interface IProductService {
 
     Product updateProduct(Long id, ProductForm productForm) throws DataNotFoundException;
 
-    void deleteProduct(Long id);
+    void deleteProductById(Long id) throws DataNotFoundException;
 
     boolean existsByName(String name);
 

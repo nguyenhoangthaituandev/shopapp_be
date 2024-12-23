@@ -54,22 +54,8 @@ public class ProductService implements IProductService {
 
     @Override
     public Page<ProductDTO> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest).map(product ->
-        {
-            ProductDTO productDTO = ProductDTO.builder()
-                    .name(product.getName())
-                    .price(product.getPrice())
-                    .thumbnail(product.getThumbnail())
-                    .description(product.getDescription())
-                    .categoryId(product.getCategory().getId())
-                    .build();
-            productDTO.setCreatedAt(product.getCreatedAt());
-            productDTO.setUpdatedAt(product.getUpdatedAt());
-            return productDTO;
-        });
-
+        return productRepository.findAll(pageRequest).map(ProductDTO::fromProduct);
     }
-
 
     @Override
     public Product getProductById(Long id) throws DataNotFoundException {
@@ -96,7 +82,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void deleteProduct(Long id) {
+    public void deleteProductById(Long id)throws DataNotFoundException {
         Optional<Product> optionalProduct = productRepository.findById(id);
         optionalProduct.ifPresent(productRepository::delete);
     }
