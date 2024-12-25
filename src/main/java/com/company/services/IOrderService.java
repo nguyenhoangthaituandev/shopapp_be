@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface IOrderService {
     OrderDTO createOrder(OrderForm orderForm) throws DataNotFoundException, InvalidParamException;
-    OrderDTO getOrderById(Long orderId);
-    OrderDTO updateOrderById(Long orderId, OrderForm orderForm);
-    void deleteOrderById(Long id);
-    List<OrderDTO> getAllOrdersByUserId(Long userId);
+    OrderDTO getOrderById(Long orderId) throws DataNotFoundException;
+    OrderDTO updateOrderById(Long orderId, OrderForm orderForm) throws DataNotFoundException;
+    void deleteOrderById(Long id) throws DataNotFoundException;
+    List<OrderDTO> getAllOrdersByUserId(Long userId) throws DataNotFoundException;
 }

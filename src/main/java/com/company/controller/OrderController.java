@@ -2,6 +2,7 @@ package com.company.controller;
 
 import com.company.dtos.OrderDTO;
 import com.company.forms.OrderForm;
+import com.company.models.Order;
 import com.company.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,25 +39,46 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<?> getOrdersByUserId( @Valid @PathVariable(name="userId") Long userId){
         try{
-            return ResponseEntity.ok("Get All Order By UserId successfully");
+            List<OrderDTO> orders=orderService.getAllOrdersByUserId(userId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getOrdersById( @Valid @PathVariable(name="id") Long orderId){
+        try{
+            OrderDTO orderDTO=orderService.getOrderById(orderId);
+            return ResponseEntity.ok(orderDTO);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateOrderByUserId(
-            @Valid @PathVariable(name="id") Long Id,
+    public ResponseEntity<?> updateOrderById(
+            @Valid @PathVariable(name="id") Long id,
             @Valid @RequestBody OrderForm orderForm
     ){
-        return ResponseEntity.ok("Update Order By UserId successfully");
+        try{
+            OrderDTO order=orderService.updateOrderById(id,orderForm);
+            return ResponseEntity.ok(order);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrderById(@Valid @PathVariable(name="id") Long id){
-        return ResponseEntity.ok("Delete Order By Id successfully");
+        try{
+            orderService.deleteOrderById(id);
+            return ResponseEntity.ok("Delete Order By Id successfully");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

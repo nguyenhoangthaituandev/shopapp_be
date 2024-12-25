@@ -12,11 +12,15 @@ import com.company.repositories.OrderRepository;
 import com.company.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.stereotype.Service;
 
 
+import javax.swing.text.html.Option;
+import java.lang.reflect.Type;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -55,22 +59,52 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public OrderDTO getOrderById(Long orderId) {
-        return null;
+    public List<OrderDTO> getAllOrdersByUserId(Long userId) throws DataNotFoundException {
+        if (!userRepository.existsById(userId)) {
+            throw new DataNotFoundException("Can not found user with ID: " + userId);
+        }
+
+        List<Order> orders = orderRepository.findByUserId(userId);
+        if (orders.isEmpty()) {
+            throw new DataNotFoundException("No orders found for user with ID " + userId);
+        }
+        Type listType = new TypeToken<List<OrderDTO>>() {
+        }.getType();
+        return modelMapper.map(orders, listType);
     }
 
     @Override
-    public OrderDTO updateOrderById(Long orderId, OrderForm orderForm) {
-        return null;
+    public OrderDTO getOrderById(Long orderId) throws DataNotFoundException {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new DataNotFoundException("Can not found order with ID: " + orderId));
+
+        return modelMapper.map(order, OrderDTO.class);
     }
 
     @Override
-    public void deleteOrderById(Long id) {
+    public OrderDTO updateOrderById(Long orderId, OrderForm orderForm) throws DataNotFoundException {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new DataNotFoundException("Can not found order with ID: " + orderId));
+        User user = userRepository.findById(orderForm.getUserId())
+                .orElseThrow(() -> new DataNotFoundException("Can not found user with ID: " + orderForm.getUserId()));
 
+        modelMapper.typeMap(OrderForm.class, Order.class)
+                .addMappings(mapper -> mapper.skip(Order::setId));
+        modelMapper.map(orderForm, order);
+        order.setUser(user);
+        orderRepository.save(order);
+        return modelMapper.map(order, OrderDTO.class);
     }
 
     @Override
-    public List<OrderDTO> getAllOrdersByUserId(Long userId) {
-        return List.of();
+    public void deleteOrderById(Long id) throws DataNotFoundException {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new DataNotFoundException("Can not found order with ID: " + id));
+
+        order.setIsActive(false);
+        orderRepository.save(order);
+
     }
+
+
 }
