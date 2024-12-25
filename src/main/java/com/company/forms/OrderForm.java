@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @ToString
@@ -27,11 +29,13 @@ public class OrderForm {
     private String note;
 
     @Min(value=0,message="Total money must be greater than zero")
-    private Float totalMoney;
+    private Float totalPrice;
 
     private String shippingMethod;
 
     private String shippingAddress;
+
+    private Date shippingDate;
 
     private String paymentMethod;
 
