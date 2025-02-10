@@ -97,7 +97,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
-    public void deleteOrderById(Long id) throws DataNotFoundException {
+    public void softDeleteOrderById(Long id) throws DataNotFoundException {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new DataNotFoundException("Can not found order with ID: " + id));
 

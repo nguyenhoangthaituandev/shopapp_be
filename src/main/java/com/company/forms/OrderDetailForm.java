@@ -22,6 +22,7 @@ public class OrderDetailForm {
     private Integer quantity;
 
     @Min(value=0,message="Total money must be greater than zero")
-    private Float totalMoney;
+    private Float totalPrice;
 
+    private String color;
 }

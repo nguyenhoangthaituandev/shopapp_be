@@ -75,7 +75,7 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteOrderById(@Valid @PathVariable(name="id") Long id){
         try{
-            orderService.deleteOrderById(id);
+            orderService.softDeleteOrderById(id);
             return ResponseEntity.ok("Delete Order By Id successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
