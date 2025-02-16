@@ -8,5 +8,5 @@ import com.company.models.User;
 public interface IUserService {
     User register(UserRegisterForm userRegisterForm) throws DataNotFoundException;
 
-    String login(String phoneNumber, String password);
+    String login(String phoneNumber, String password) throws DataNotFoundException;
 }

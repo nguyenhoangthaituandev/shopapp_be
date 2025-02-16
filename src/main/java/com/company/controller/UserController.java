@@ -1,7 +1,9 @@
 package com.company.controller;
 
+import com.company.exceptions.DataNotFoundException;
 import com.company.forms.UserRegisterForm;
 import com.company.forms.UserLoginForm;
+import com.company.models.User;
 import com.company.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -45,9 +47,9 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login( @Valid @RequestBody UserLoginForm userLoginForm){
-        String token=userService.login(userLoginForm.getPhoneNumber(),userLoginForm.getPassword());
+    public ResponseEntity<String> login( @Valid @RequestBody UserLoginForm userLoginForm) throws DataNotFoundException {
+        String user=userService.login(userLoginForm.getPhoneNumber(),userLoginForm.getPassword());
         //TODO
-        return ResponseEntity.ok(token);
+        return null;
     }
 }
