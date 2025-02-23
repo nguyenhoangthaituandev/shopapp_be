@@ -5,12 +5,16 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoder;
+import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.security.InvalidParameterException;
 import java.security.Key;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Function;
 
@@ -30,13 +34,13 @@ public class JwtTokenUtil {
             return Jwts.builder()
                     .setClaims(claims)
                     .setSubject(user.getPhoneNumber())
-                    .setExpiration(new Date(System.currentTimeMillis()+expiration*1000L))
+                    .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
                     .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                     .compact();
         }catch(Exception e){
             // You can use Logger, instead sout
-            System.out.println("Can not create jwt token, error: "+e.getMessage());
-            return null;
+            throw new InvalidParameterException("Can not create jwt token, error: "+e.getMessage());
+
         }
     }
 
@@ -44,6 +48,14 @@ public class JwtTokenUtil {
         byte[] bytes= Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(bytes);
     }
+
+//    private String generateSecretKey(){
+//        SecureRandom random=new SecureRandom();
+//        byte[] keyBytes=new byte[32];
+//        random.nextBytes(keyBytes);
+//        String secretKey= Encoders.BASE64.encode(keyBytes);
+//        return secretKey;
+//    }
 
     private Claims extractAllClaims(String token){
         return Jwts.parserBuilder()

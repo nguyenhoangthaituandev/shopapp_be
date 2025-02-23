@@ -39,17 +39,20 @@ public class UserController {
             if(!userRegisterForm.getPassword().equals(userRegisterForm.getRetypePassword())){
                 return ResponseEntity.badRequest().body("Password and retype password are not match");
             }
-            userService.register(userRegisterForm);
-            return ResponseEntity.ok("Register successfully");
+            User user=userService.register(userRegisterForm);
+            return ResponseEntity.ok(user);
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login( @Valid @RequestBody UserLoginForm userLoginForm) throws DataNotFoundException {
-        String user=userService.login(userLoginForm.getPhoneNumber(),userLoginForm.getPassword());
-        //TODO
-        return null;
+    public ResponseEntity<String> login( @Valid @RequestBody UserLoginForm userLoginForm)  {
+        try {
+            String token=userService.login(userLoginForm.getPhoneNumber(),userLoginForm.getPassword());
+            return ResponseEntity.ok(token);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
