@@ -2,6 +2,7 @@ package com.company.services;
 
 import com.company.components.JwtTokenUtil;
 import com.company.exceptions.DataNotFoundException;
+import com.company.exceptions.PermissionDenyException;
 import com.company.forms.UserRegisterForm;
 import com.company.models.Role;
 import com.company.models.User;
@@ -28,10 +29,15 @@ public class UserService implements IUserService{
     private final AuthenticationManager authenticationManager;
 
     @Override
-    public User register(UserRegisterForm userRegisterForm) throws DataNotFoundException {
+    public User register(UserRegisterForm userRegisterForm) throws Exception {
         String phoneNumber=userRegisterForm.getPhoneNumber();
         if(userRepository.existsByPhoneNumber(phoneNumber)){
             throw new DataIntegrityViolationException("Phone number already exists");
+        }
+        Role role=roleRepository.findById(userRegisterForm.getRoleId())
+                .orElseThrow(()-> new DataNotFoundException("Role not found"));
+        if(role.getName().toUpperCase().equals(Role.ADMIN)){
+            throw new PermissionDenyException("You cannot register a admin account");
         }
         // convert UserRegisterForm => UserEntity
         User user=User.builder()
@@ -43,8 +49,7 @@ public class UserService implements IUserService{
                 .facebookAccountId(userRegisterForm.getFacebookAccountId())
                 .googleAccountId(userRegisterForm.getGoogleAccountId())
                 .build();
-        Role role=roleRepository.findById(userRegisterForm.getRoleId())
-                .orElseThrow(()-> new DataNotFoundException("Role not found"));
+
         user.setRole(role);
 
         // check dang nhap normal
